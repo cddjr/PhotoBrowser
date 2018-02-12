@@ -172,7 +172,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
             contentView.addSubview(rawImageButton)
             rawImageButton.sizeToFit()
             rawImageButton.bounds.size.width += 14
-            rawImageButton.center = CGPoint(x: contentView.bounds.midX, y: contentView.bounds.height - 20 - rawImageButton.bounds.height)
+            rawImageButton.center = CGPoint(x: contentView.bounds.midX, y: contentView.bounds.height - 50 - rawImageButton.bounds.height)
             rawImageButton.isHidden = false
         }
     }
