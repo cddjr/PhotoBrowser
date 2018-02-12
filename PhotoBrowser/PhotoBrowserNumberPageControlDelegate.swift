@@ -19,8 +19,8 @@ public class PhotoBrowserNumberPageControlDelegate: PhotoBrowserPageControlDeleg
     /// 字颜色
     public var textColor = UIColor.white
     
-    /// 中心点Y坐标
-    public var centerY: CGFloat = 30
+    /// 顶部Y坐标
+    public var topY: CGFloat = 15
     
     public init(numberOfPages: Int) {
         self.numberOfPages = numberOfPages
@@ -55,6 +55,17 @@ public class PhotoBrowserNumberPageControlDelegate: PhotoBrowserPageControlDeleg
     private func layoutPageControl(_ pageControl: UIView) {
         pageControl.sizeToFit()
         guard let superView = pageControl.superview else { return }
-        pageControl.center = CGPoint(x: superView.bounds.midX, y: superView.bounds.minY + centerY)
+        var center:CGPoint!
+        if #available(iOS 11.0, *) {
+            var topY = self.topY
+            if superView.safeAreaInsets.top > 0 {
+                topY = 0
+            }
+            let bounds = UIEdgeInsetsInsetRect(superView.bounds, superView.safeAreaInsets)
+            center = CGPoint(x: bounds.midX, y: bounds.minY + topY + pageControl.bounds.height / 2)
+        } else {
+            center = CGPoint(x: superView.bounds.midX, y: superView.bounds.minY + topY + pageControl.bounds.height / 2)
+        }
+        pageControl.center = center
     }
 }

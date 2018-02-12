@@ -13,6 +13,9 @@ public class PhotoBrowserDefaultPageControlDelegate: PhotoBrowserPageControlDele
     /// 总页数
     public var numberOfPages: Int
     
+    /// 底部Y坐标
+    public var bottomY: CGFloat = 6
+    
     public init(numberOfPages: Int) {
         self.numberOfPages = numberOfPages
     }
@@ -29,7 +32,18 @@ public class PhotoBrowserDefaultPageControlDelegate: PhotoBrowserPageControlDele
     
     public func photoBrowserPageControl(_ pageControl: UIView, needLayoutIn superView: UIView) {
         pageControl.sizeToFit()
-        pageControl.center = CGPoint(x: superView.bounds.midX, y: superView.bounds.maxY - 20)
+        var center:CGPoint!
+        if #available(iOS 11.0, *) {
+            var bottomY = self.bottomY
+            if superView.safeAreaInsets.bottom > 0 {
+                bottomY = 0
+            }
+            let bounds = UIEdgeInsetsInsetRect(superView.bounds, superView.safeAreaInsets)
+            center = CGPoint(x: bounds.midX, y: bounds.maxY - bottomY - pageControl.bounds.height / 2)
+        } else {
+            center = CGPoint(x: superView.bounds.midX, y: superView.bounds.maxY - bottomY - pageControl.bounds.height / 2)
+        }
+        pageControl.center = center
     }
     
     public func photoBrowserPageControl(_ pageControl: UIView, didChangedCurrentPage currentPage: Int) {
