@@ -1,3 +1,7 @@
 *.xcuserstate
 *.xcuserdatad
 *.xcbkptlist
+
+\.DS_Store
+
+Demo/Pods/
