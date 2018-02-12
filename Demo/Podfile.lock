@@ -1,7 +1,13 @@
 PODS:
   - JXPhotoBrowser (0.4.5):
-    - Kingfisher
-  - Kingfisher (4.0.1)
+    - YYWebImage
+  - YYCache (1.0.4)
+  - YYImage (1.0.4):
+    - YYImage/Core (= 1.0.4)
+  - YYImage/Core (1.0.4)
+  - YYWebImage (1.0.5):
+    - YYCache
+    - YYImage
 
 DEPENDENCIES:
   - JXPhotoBrowser (from `..`)
@@ -11,8 +17,10 @@ EXTERNAL SOURCES:
     :path: ..
 
 SPEC CHECKSUMS:
-  JXPhotoBrowser: b1c33a01dd7eab8132887ffd782649d8aabb0bfe
-  Kingfisher: b771785e9461ed4b8686d40e7145f9e58100cb24
+  JXPhotoBrowser: 828cb154d7c40279f76e49eeabcb679851345ad9
+  YYCache: 8105b6638f5e849296c71f331ff83891a4942952
+  YYImage: 1e1b62a9997399593e4b9c4ecfbbabbf1d3f3b54
+  YYWebImage: 5f7f36aee2ae293f016d418c7d6ba05c4863e928
 
 PODFILE CHECKSUM: 4336210e105997d3dec6769ab57764a7cd225dc3
 

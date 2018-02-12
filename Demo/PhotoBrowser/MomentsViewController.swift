@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Kingfisher
+import YYWebImage
 import JXPhotoBrowser
 
 class MomentsViewController: UIViewController {
@@ -94,7 +94,7 @@ extension MomentsViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MomentsPhotoCollectionViewCell.defalutId, for: indexPath) as! MomentsPhotoCollectionViewCell
-        cell.imageView.kf.setImage(with: URL(string: thumbnailImageUrls[indexPath.row]))
+        cell.imageView.yy_imageURL = URL(string: thumbnailImageUrls[indexPath.row])
         return cell
     }
 }
@@ -141,12 +141,10 @@ extension MomentsViewController: PhotoBrowserDelegate {
     }
     
     /// 最高清图，原图。（需要时可实现本方法）
-    /*
     func photoBrowser(_ photoBrowser: PhotoBrowser, rawUrlForIndex index: Int) -> URL? {
-        return nil
         // 测试
         return index == 2 ? URL(string: "https://b-ssl.duitang.com/uploads/item/201501/28/20150128173439_RK4XS.jpeg") : nil
-    }*/
+    }
     
     /// 长按图片
     func photoBrowser(_ photoBrowser: PhotoBrowser, didLongPressForIndex index: Int, image: UIImage) {

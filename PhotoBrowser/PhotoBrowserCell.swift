@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Kingfisher
+import YYWebImage
 
 protocol PhotoBrowserCellDelegate: NSObjectProtocol {
     /// 单击时回调
@@ -25,8 +25,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
     /// 代理
     weak var photoBrowserCellDelegate: PhotoBrowserCellDelegate?
     
-    /// 显示图像
-    public let imageView = UIImageView()
+    /// 显示图像(支持动画)
+    public let imageView = YYAnimatedImageView()
     
     /// 原图url
     public var rawUrl: URL?
@@ -101,6 +101,9 @@ public class PhotoBrowserCell: UICollectionViewCell {
 
     private var shouldLayout = true
     
+    /// 是否正在下载原图
+    private var rawImageDownloading = false
+    
     // MARK: - 方法
     
     override init(frame: CGRect) {
@@ -144,6 +147,11 @@ public class PhotoBrowserCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    public override func prepareForReuse() {
+        super.prepareForReuse()
+        self.imageView.yy_cancelCurrentImageRequest()
+    }
+    
     public override func layoutSubviews() {
         super.layoutSubviews()
         doLayout()
@@ -172,7 +180,13 @@ public class PhotoBrowserCell: UICollectionViewCell {
     /// 设置图片。image为placeholder图片，url为网络图片
     public func setImage(_ image: UIImage?, highQualityUrl: URL?, rawUrl: URL?) {
         // 查看原图按钮
+        if rawImageDownloading {
+            rawImageDownloading = false
+            imageView.yy_cancelCurrentImageRequest()
+        }
         rawImageButton.isHidden = (rawUrl == nil)
+        rawImageButton.alpha = 1
+        rawImageButton.isEnabled = true
         self.rawUrl = rawUrl
         
         // 取placeholder图像，默认使用传入的缩略图
@@ -203,14 +217,29 @@ public class PhotoBrowserCell: UICollectionViewCell {
     /// 加载图片
     private func loadImage(withPlaceholder placeholder: UIImage?, url: URL?) {
         self.progressView.isHidden = false
-        weak var weakSelf = self
-        imageView.kf.setImage(with: url, placeholder: placeholder, options: nil, progressBlock: { (receivedSize, totalSize) in
-            if totalSize > 0 {
-                weakSelf?.progressView.progress = CGFloat(receivedSize) / CGFloat(totalSize)
+        imageView.yy_setImage(
+            with: url, placeholder: placeholder, options: [],
+            progress: { [weak self] (receivedSize, totalSize) in
+                if totalSize > 0 {
+                    self?.progressView.progress = CGFloat(receivedSize) / CGFloat(totalSize)
+                }
+        }, transform: nil, completion: { [weak self] (image,_,_,_,_) in
+            guard let `self` = self else {
+                return
             }
-        }, completionHandler: { (image, error, cacheType, url) in
-            weakSelf?.progressView.isHidden = true
-            weakSelf?.doLayout()
+            if self.rawImageDownloading {
+                self.rawImageDownloading = false
+                if image == nil {
+                    //原图加载失败
+                    self.rawImageButton.isEnabled = true
+                    self.rawImageButton.alpha = 1
+                } else {
+                    //原图加载成功，隐藏按钮
+                    self.rawImageButton.isHidden = true
+                }
+            }
+            self.progressView.isHidden = true
+            self.doLayout()
         })
     }
     
@@ -219,17 +248,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
         guard let url = url else {
             return nil
         }
-        var cacheImage: UIImage?
-        let result = KingfisherManager.shared.cache.imageCachedType(forKey: url.cacheKey)
-        switch result {
-        case .none:
-            cacheImage = nil
-        case .memory:
-            cacheImage = KingfisherManager.shared.cache.retrieveImageInMemoryCache(forKey: url.cacheKey)
-        case .disk:
-            cacheImage = KingfisherManager.shared.cache.retrieveImageInDiskCache(forKey: url.cacheKey)
-        }
-        return cacheImage
+        let manager = YYWebImageManager.shared()
+        return manager.cache?.getImageForKey(manager.cacheKey(for: url), with: .all)
     }
     
     /// 响应单击
@@ -338,8 +358,11 @@ public class PhotoBrowserCell: UICollectionViewCell {
     
     /// 响应查看原图按钮
     @objc func onRawImageButtonTap() {
+        rawImageButton.isEnabled = false
+        rawImageButton.alpha = 0.8
+        rawImageDownloading = true
+        
         loadImage(withPlaceholder: imageView.image, url: rawUrl)
-        rawImageButton.isHidden = true
     }
 }
 

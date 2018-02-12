@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import Kingfisher
+import YYWebImage
 
 // MARK: - PhotoBrowserDelegate
 public protocol PhotoBrowserDelegate: class {
