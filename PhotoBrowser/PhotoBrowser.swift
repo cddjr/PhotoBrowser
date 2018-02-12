@@ -90,6 +90,9 @@ public class PhotoBrowser: UIViewController {
     /// 双击放大图片时的目标比例
     public var imageZoomScaleForDoubleTap: CGFloat = 2.0
     
+    /// 图片查看器已关闭
+    public var dismissCompletion: (() -> Void)?
+    
     // MARK: -  内部属性
     /// 当前显示的图片序号，从0开始
     private var currentIndex = 0 {
@@ -170,9 +173,11 @@ public class PhotoBrowser: UIViewController {
     }
     
     /// 便利的展示方法，合并init和show两个步骤
-    public class func show(byViewController presentingVC: UIViewController, delegate: PhotoBrowserDelegate, index: Int) {
+    @discardableResult
+    public class func show(byViewController presentingVC: UIViewController, delegate: PhotoBrowserDelegate, index: Int) -> PhotoBrowser {
         let vc = PhotoBrowser(showByViewController: presentingVC, delegate: delegate)
         vc.show(index: index)
+        return vc
     }
     
     // MARK: - 内部方法
@@ -344,7 +349,7 @@ extension PhotoBrowser: UIViewControllerTransitioningDelegate {
 extension PhotoBrowser: PhotoBrowserCellDelegate {
     public func photoBrowserCellDidSingleTap(_ view: PhotoBrowserCell) {
         coverStatusBar(false)
-        dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: dismissCompletion)
     }
     
     public func photoBrowserCell(_ view: PhotoBrowserCell, didPanScale scale: CGFloat) {
