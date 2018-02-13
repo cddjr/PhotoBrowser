@@ -54,16 +54,21 @@ public class PhotoBrowserCell: UICollectionViewCell {
     private lazy var rawImageButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
         button.setTitleColor(UIColor.white, for: .normal)
-        button.setTitleColor(UIColor.white, for: .highlighted)
         button.setTitle("查看原图", for: .normal)
-        button.setTitle("查看原图", for: .highlighted)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 12)
-        button.layer.borderColor = UIColor.lightGray.cgColor
-        button.layer.borderWidth = 1
-        button.layer.cornerRadius = 4
-        button.layer.masksToBounds = true
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 12)
         button.addTarget(self, action: #selector(onRawImageButtonTap), for: .touchUpInside)
+        button.setBackgroundImage(rawImageButtonBackgroundImage, for: .normal)
         return button
+        }()
+    
+    private lazy var rawImageButtonBackgroundImage: UIImage? = { [unowned self] in
+        guard let bundleURL = Bundle(for: PhotoBrowser.self)
+            .url(forResource: "JXPhotoBrowser", withExtension: "bundle") else {
+                return nil
+        }
+        let img = UIImage(named: "rawbtn", in: Bundle(url: bundleURL), compatibleWith: nil)
+        let edge = UIEdgeInsets(top: 6, left: 6, bottom: 6, right: 6)
+        return img?.resizableImage(withCapInsets: edge, resizingMode: .tile)
         }()
     
     /// 计算contentSize应处于的中心位置
@@ -172,8 +177,15 @@ public class PhotoBrowserCell: UICollectionViewCell {
             contentView.addSubview(rawImageButton)
             rawImageButton.sizeToFit()
             rawImageButton.bounds.size.width += 14
-            rawImageButton.center = CGPoint(x: contentView.bounds.midX, y: contentView.bounds.height - 50 - rawImageButton.bounds.height)
-            rawImageButton.isHidden = false
+            rawImageButton.bounds.size.height += 6
+            if rawImageButton.bounds.size.width < 100 {
+                rawImageButton.bounds.size.width = 100
+            }
+            if rawImageButton.bounds.size.height < 24 {
+                rawImageButton.bounds.size.height = 24
+            }
+            rawImageButton.center = CGPoint(x: contentView.bounds.midX,
+                                            y: contentView.bounds.height - 50 - rawImageButton.bounds.height)
         }
     }
     

@@ -7,6 +7,7 @@ Pod::Spec.new do |s|
   s.authors = { 'JiongXing' => '549235261@qq.com' }
   s.source = { :git => 'https://github.com/JiongXing/PhotoBrowser.git', :tag => s.version }
   s.source_files  = 'PhotoBrowser/*.swift'
+  s.resource_bundles = {'JXPhotoBrowser' => ['PhotoBrowser/Resources/**/*']}
   s.ios.deployment_target = '8.0'
   s.dependency 'YYWebImage'
 end
