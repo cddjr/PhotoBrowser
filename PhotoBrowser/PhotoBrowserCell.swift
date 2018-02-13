@@ -207,8 +207,21 @@ public class PhotoBrowserCell: UICollectionViewCell {
             } else {
                 rawImageButton.bounds.size = rawImageButtonSize!
             }
-            rawImageButton.center = CGPoint(x: contentView.bounds.midX,
-                                            y: contentView.bounds.height - 50 - rawImageButton.bounds.height)
+            
+            var center:CGPoint!
+            var bottomY:CGFloat = 6 + UIPageControlHeight + UIPageControlBottom
+            if #available(iOS 11.0, *) {
+                let safeAreaInsets = superview?.safeAreaInsets ?? UIEdgeInsets.zero
+                if safeAreaInsets.bottom > 0 {
+                    bottomY = 6 + UIPageControlHeight
+                }
+                let bounds = UIEdgeInsetsInsetRect(contentView.bounds, safeAreaInsets)
+                center = CGPoint(x: bounds.midX, y: bounds.maxY - bottomY - rawImageButton.bounds.height / 2)
+            } else {
+                center = CGPoint(x: contentView.bounds.midX,
+                                 y: contentView.bounds.maxY - bottomY - rawImageButton.bounds.height / 2)
+            }
+            rawImageButton.center = center
             rawImageCancelView.center = CGPoint(x: rawImageButton.bounds.maxX - 12 - rawImageCancelView.bounds.width / 2,
                                                 y: rawImageButton.bounds.maxY / 2)
         }
