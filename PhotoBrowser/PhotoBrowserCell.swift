@@ -60,6 +60,22 @@ public class PhotoBrowserCell: UICollectionViewCell {
         return button
         }()
     
+    private lazy var rawImageCancelView: UIImageView = { [unowned self] in
+        guard let bundleURL = Bundle(for: PhotoBrowser.self)
+            .url(forResource: "JXPhotoBrowser", withExtension: "bundle"),
+            let img = UIImage(named: "cancel", in: Bundle(url: bundleURL), compatibleWith: nil) else {
+                return UIImageView()
+        }
+        
+        let view = UIImageView(image: img)
+        view.isHidden = true
+        view.isUserInteractionEnabled = false
+        view.bounds.size = CGSize(width: 8, height: 8)
+        
+        rawImageButton.addSubview(view)
+        return view
+        }()
+    
     private lazy var rawImageButtonBackgroundImage: UIImage? = { [unowned self] in
         guard let bundleURL = Bundle(for: PhotoBrowser.self)
             .url(forResource: "JXPhotoBrowser", withExtension: "bundle") else {
@@ -108,7 +124,11 @@ public class PhotoBrowserCell: UICollectionViewCell {
     private var shouldLayout = true
     
     /// 是否正在下载原图
-    private var rawImageDownloading = false
+    private var rawImageDownloading = false {
+        didSet {
+            rawImageCancelView.isHidden = !rawImageDownloading
+        }
+    }
     
     /// 原图大小
     private var rawSize:Int? = nil
@@ -189,6 +209,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
             }
             rawImageButton.center = CGPoint(x: contentView.bounds.midX,
                                             y: contentView.bounds.height - 50 - rawImageButton.bounds.height)
+            rawImageCancelView.center = CGPoint(x: rawImageButton.bounds.maxX - 12 - rawImageCancelView.bounds.width / 2,
+                                                y: rawImageButton.bounds.maxY / 2)
         }
     }
     
@@ -253,7 +275,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
             progress: { [weak self] (receivedSize, totalSize) in
                 if totalSize > 0 {
                     let progress = CGFloat(receivedSize) / CGFloat(totalSize)
-                    self?.progressView.progress = progress
+                    self?.progressView.progress = max(progress, 0.02)
                     if self?.rawImageDownloading == true {
                         self?.rawImageButton.setTitle("\(Int(progress*100))%", for: .normal)
                     }
@@ -279,7 +301,9 @@ public class PhotoBrowserCell: UICollectionViewCell {
                 }
             }
             self.progressView.isHidden = true
-            self.doLayout()
+            if image != nil {
+                self.doLayout()
+            }
         })
     }
     
@@ -399,8 +423,17 @@ public class PhotoBrowserCell: UICollectionViewCell {
     
     /// 响应查看原图按钮
     @objc func onRawImageButtonTap() {
-        rawImageDownloading = true
-        loadImage(withPlaceholder: imageView.image, url: rawUrl)
+        if !rawImageDownloading {
+            rawImageDownloading = true
+            progressView.progress = 0.02
+            rawImageButton.setTitle("0%", for: .normal)
+            loadImage(withPlaceholder: imageView.image, url: rawUrl)
+        } else {
+            //取消下载
+            rawImageDownloading = false
+            imageView.yy_cancelCurrentImageRequest()
+            resetRawImageButton()
+        }
     }
 }
 
