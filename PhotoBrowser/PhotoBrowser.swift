@@ -315,6 +315,13 @@ extension PhotoBrowser: UICollectionViewDataSource {
 extension PhotoBrowser: UICollectionViewDelegate {
     
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard scrollView.isDecelerating
+            || scrollView.isTracking
+            || scrollView.isDragging
+            else {
+                //通过代码滚动过来的忽略更新分页
+                return
+        }
         let offsetX = scrollView.contentOffset.x
         let width = scrollView.frame.width + photoSpacing
         currentIndex = Int(floor(offsetX / width + 0.5))
