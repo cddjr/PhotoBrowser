@@ -216,6 +216,14 @@ public class PhotoBrowser: UIViewController {
     
     public override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        
+        if self.collectionView.isDecelerating
+            || self.collectionView.isTracking
+            || self.collectionView.isDragging {
+            //因为默认的数字分页指示器在改变时会产生重布局，这里需要忽略
+            return
+        }
+        
         // 屏幕旋转后的调整
         let indexPath = IndexPath.init(item: self.currentIndex, section: 0)
         self.collectionView.scrollToItem(at: indexPath, at: .left, animated: false)
@@ -305,11 +313,11 @@ extension PhotoBrowser: UICollectionViewDataSource {
 // MARK: - UICollectionViewDelegate
 
 extension PhotoBrowser: UICollectionViewDelegate {
-    /// 减速完成后，计算当前页
-    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    
+    public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let offsetX = scrollView.contentOffset.x
         let width = scrollView.frame.width + photoSpacing
-        currentIndex = Int(offsetX / width)
+        currentIndex = Int(floor(offsetX / width + 0.5))
     }
 }
 
