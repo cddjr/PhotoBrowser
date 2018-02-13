@@ -54,7 +54,6 @@ public class PhotoBrowserCell: UICollectionViewCell {
     private lazy var rawImageButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
         button.setTitleColor(UIColor.white, for: .normal)
-        button.setTitle("查看原图", for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 12)
         button.addTarget(self, action: #selector(onRawImageButtonTap), for: .touchUpInside)
         button.setBackgroundImage(rawImageButtonBackgroundImage, for: .normal)
@@ -70,6 +69,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
         let edge = UIEdgeInsets(top: 6, left: 6, bottom: 6, right: 6)
         return img?.resizableImage(withCapInsets: edge, resizingMode: .tile)
         }()
+    
+    private var rawImageButtonSize: CGSize? = nil
     
     /// 计算contentSize应处于的中心位置
     private var centerOfContentSize: CGPoint {
@@ -108,6 +109,9 @@ public class PhotoBrowserCell: UICollectionViewCell {
     
     /// 是否正在下载原图
     private var rawImageDownloading = false
+    
+    /// 原图大小
+    private var rawSize:Int? = nil
     
     // MARK: - 方法
     
@@ -175,30 +179,45 @@ public class PhotoBrowserCell: UICollectionViewCell {
         // 查看原图按钮
         if rawImageButton.isHidden == false {
             contentView.addSubview(rawImageButton)
-            rawImageButton.sizeToFit()
-            rawImageButton.bounds.size.width += 14
-            rawImageButton.bounds.size.height += 6
-            if rawImageButton.bounds.size.width < 100 {
-                rawImageButton.bounds.size.width = 100
-            }
-            if rawImageButton.bounds.size.height < 24 {
-                rawImageButton.bounds.size.height = 24
+            if rawImageButtonSize == nil {
+                rawImageButton.sizeToFit()
+                rawImageButton.bounds.size.width += 14
+                rawImageButton.bounds.size.height += 6
+                rawImageButtonSize = rawImageButton.bounds.size
+            } else {
+                rawImageButton.bounds.size = rawImageButtonSize!
             }
             rawImageButton.center = CGPoint(x: contentView.bounds.midX,
                                             y: contentView.bounds.height - 50 - rawImageButton.bounds.height)
         }
     }
     
+    private func resetRawImageButton() {
+        //设置查看原图按钮的标题
+        var sizeTitle = ""
+        if let size = rawSize {
+            if size < 1024*1024 {
+                //形如(367K)
+                sizeTitle = "(\(Int(size / 1024))K)"
+            } else {
+                //形如(11.3M)，保留一位小数
+                sizeTitle = String(format: "(%.1fM)", Double(size) / 1024 / 1024)
+            }
+        }
+        rawImageButton.setTitle("查看原图\(sizeTitle)", for: .normal)
+        rawImageButtonSize = nil
+    }
+    
     /// 设置图片。image为placeholder图片，url为网络图片
-    public func setImage(_ image: UIImage?, highQualityUrl: URL?, rawUrl: URL?) {
+    public func setImage(_ image: UIImage?, highQualityUrl: URL?, rawUrl: URL?, rawSize: Int?) {
         // 查看原图按钮
         if rawImageDownloading {
             rawImageDownloading = false
             imageView.yy_cancelCurrentImageRequest()
         }
         rawImageButton.isHidden = (rawUrl == nil)
-        rawImageButton.alpha = 1
-        rawImageButton.isEnabled = true
+        self.rawSize = rawSize
+        resetRawImageButton()
         self.rawUrl = rawUrl
         
         // 取placeholder图像，默认使用传入的缩略图
@@ -233,7 +252,11 @@ public class PhotoBrowserCell: UICollectionViewCell {
             with: url, placeholder: placeholder, options: [],
             progress: { [weak self] (receivedSize, totalSize) in
                 if totalSize > 0 {
-                    self?.progressView.progress = CGFloat(receivedSize) / CGFloat(totalSize)
+                    let progress = CGFloat(receivedSize) / CGFloat(totalSize)
+                    self?.progressView.progress = progress
+                    if self?.rawImageDownloading == true {
+                        self?.rawImageButton.setTitle("\(Int(progress*100))%", for: .normal)
+                    }
                 }
         }, transform: nil, completion: { [weak self] (image,_,_,_,_) in
             guard let `self` = self else {
@@ -242,12 +265,17 @@ public class PhotoBrowserCell: UICollectionViewCell {
             if self.rawImageDownloading {
                 self.rawImageDownloading = false
                 if image == nil {
-                    //原图加载失败
-                    self.rawImageButton.isEnabled = true
-                    self.rawImageButton.alpha = 1
+                    //原图加载失败，按钮文本恢复为“查看原图(367KB)”
+                    self.resetRawImageButton()
                 } else {
-                    //原图加载成功，隐藏按钮
-                    self.rawImageButton.isHidden = true
+                    //原图加载成功，渐隐按钮
+                    self.rawImageButton.setTitle("已完成", for: .normal)
+                    UIView.animate(withDuration: 0.5, animations: {
+                        self.rawImageButton.alpha = 0
+                    }, completion: { _ in
+                        self.rawImageButton.isHidden = true
+                        self.rawImageButton.alpha = 1
+                    })
                 }
             }
             self.progressView.isHidden = true
@@ -261,6 +289,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
             return nil
         }
         let manager = YYWebImageManager.shared()
+        //TODO: 需考虑disk阻塞问题
         return manager.cache?.getImageForKey(manager.cacheKey(for: url), with: .all)
     }
     
@@ -370,10 +399,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
     
     /// 响应查看原图按钮
     @objc func onRawImageButtonTap() {
-        rawImageButton.isEnabled = false
-        rawImageButton.alpha = 0.8
         rawImageDownloading = true
-        
         loadImage(withPlaceholder: imageView.image, url: rawUrl)
     }
 }

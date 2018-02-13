@@ -29,6 +29,9 @@ public protocol PhotoBrowserDelegate: class {
     
     /// 长按时回调。可选
     func photoBrowser(_ photoBrowser: PhotoBrowser, didLongPressForIndex index: Int, image: UIImage)
+    
+    /// 实现本方法以返回原图大小。可选
+    func photoBrowser(_ photoBrowser: PhotoBrowser, rawSizeForIndex index: Int) -> Int?
 }
 
 /// PhotoBrowserDelegate适配器
@@ -44,6 +47,10 @@ public extension PhotoBrowserDelegate {
     func photoBrowser(_ photoBrowser: PhotoBrowser, didLongPressForIndex index: Int, image: UIImage) {}
     
     func pageControlOfPhotoBrowser<T: UIView>(_ photoBrowser: PhotoBrowser) -> T? {
+        return nil
+    }
+    
+    func photoBrowser(_ photoBrowser: PhotoBrowser, rawSizeForIndex index: Int) -> Int? {
         return nil
     }
 }
@@ -272,16 +279,16 @@ extension PhotoBrowser: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NSStringFromClass(PhotoBrowserCell.self), for: indexPath) as! PhotoBrowserCell
         cell.imageView.contentMode = imageScaleMode
         cell.photoBrowserCellDelegate = self
-        let (image, highQualityUrl, rawUrl) = imageFor(index: indexPath.item)
-        cell.setImage(image, highQualityUrl: highQualityUrl, rawUrl: rawUrl)
+        let (image, highQualityUrl, rawUrl, rawSize) = imageFor(index: indexPath.item)
+        cell.setImage(image, highQualityUrl: highQualityUrl, rawUrl: rawUrl, rawSize: rawSize)
         cell.imageMaximumZoomScale = imageMaximumZoomScale
         cell.imageZoomScaleForDoubleTap = imageZoomScaleForDoubleTap
         return cell
     }
     
-    private func imageFor(index: Int) -> (UIImage?, highQualityUrl: URL?, rawUrl: URL?) {
+    private func imageFor(index: Int) -> (UIImage?, highQualityUrl: URL?, rawUrl: URL?, rawSize: Int?) {
         guard let delegate = photoBrowserDelegate else {
-            return (nil, nil, nil)
+            return (nil, nil, nil, nil)
         }
         // 缩略图
         let thumbnailImage = delegate.photoBrowser(self, thumbnailImageForIndex: index)
@@ -289,7 +296,9 @@ extension PhotoBrowser: UICollectionViewDataSource {
         let highQualityUrl = delegate.photoBrowser(self, highQualityUrlForIndex: index)
         // 原图url
         let rawUrl = delegate.photoBrowser(self, rawUrlForIndex: index)
-        return (thumbnailImage, highQualityUrl, rawUrl)
+        // 原图大小
+        let rawSize = delegate.photoBrowser(self, rawSizeForIndex: index)
+        return (thumbnailImage, highQualityUrl, rawUrl, rawSize)
     }
 }
 
