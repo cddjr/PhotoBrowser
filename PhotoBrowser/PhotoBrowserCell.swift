@@ -50,6 +50,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
     /// 加载进度指示器
     private let progressView = PhotoBrowserProgressView()
     
+    private var progressViewShowCount = 0
+    
     /// 查看原图按钮
     private lazy var rawImageButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
@@ -289,6 +291,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
     
     /// 加载图片
     private func loadImage(withPlaceholder placeholder: UIImage?, url: URL?) {
+        self.progressViewShowCount += 1
         self.progressView.isHidden = false
         imageView.yy_setImage(
             with: url, placeholder: placeholder, options: [],
@@ -300,7 +303,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
                         self?.rawImageButton.setTitle("\(Int(progress*100))%", for: .normal)
                     }
                 }
-        }, transform: nil, completion: { [weak self] (image,_,_,_,_) in
+        }, transform: nil, completion: { [weak self] (image,_,from,_,_) in
             guard let `self` = self else {
                 return
             }
@@ -320,7 +323,21 @@ public class PhotoBrowserCell: UICollectionViewCell {
                     })
                 }
             }
-            self.progressView.isHidden = true
+            self.progressViewShowCount -= 1
+            //因为可能会多次重复调用yy_setImage，所以弄一个计数器
+            if self.progressViewShowCount == 0 {
+                if from == .remote {
+                    UIView.animate(withDuration: 0.5, animations: {
+                        self.progressView.alpha = 0
+                    }, completion: { _ in
+                        self.progressView.isHidden = true
+                        self.progressView.alpha = 1
+                    })
+                } else {
+                    //如果不是从网络下载来的，那么直接隐藏进度
+                    self.progressView.isHidden = true
+                }
+            }
             if image != nil {
                 self.doLayout()
             }
