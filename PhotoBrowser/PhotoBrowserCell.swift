@@ -250,26 +250,33 @@ public class PhotoBrowserCell: UICollectionViewCell {
             rawImageDownloading = false
             imageView.yy_cancelCurrentImageRequest()
         }
-        rawImageButton.isHidden = (rawUrl == nil)
-        self.rawSize = rawSize
-        resetRawImageButton()
+        
         self.rawUrl = rawUrl
+        self.rawSize = rawSize
+        if let url = rawUrl,
+            highQualityUrl?.absoluteString.compare(url.absoluteString) == .orderedSame {
+            //特例，如果高清图和原图地址相同，那么忽略原图url
+            self.rawUrl = nil
+        }
+        
+        rawImageButton.isHidden = (self.rawUrl == nil)
+        resetRawImageButton()
         
         // 取placeholder图像，默认使用传入的缩略图
         var placeholder = image
         // 若已有原图缓存，优先使用原图
         // 次之使用高清图
         var url = highQualityUrl
-        if let cacheImage = imageFor(url: rawUrl) {
+        if let cacheImage = imageFor(url: self.rawUrl) {
             placeholder = cacheImage
-            url = rawUrl
+            url = self.rawUrl
             rawImageButton.isHidden = true
         } else if let cacheImage = imageFor(url: highQualityUrl) {
             placeholder = cacheImage
         }
         // 处理只配置了原图而不配置高清图的情况。此时使用原图代替高清图作为下载url
         if url == nil {
-            url = rawUrl
+            url = self.rawUrl
         }
         guard url != nil else {
             imageView.image = image
