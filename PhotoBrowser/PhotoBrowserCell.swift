@@ -41,6 +41,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
     /// 双击放大图片时的目标比例
     public var imageZoomScaleForDoubleTap: CGFloat = 2.0
     
+    public var photoSpacing: CGFloat = 30
+    
     // MARK: - 内部属性
     /// 内嵌容器。本类不能继承UIScrollView。
     /// 因为实测UIScrollView遵循了UIGestureRecognizerDelegate协议，而本类也需要遵循此协议，
@@ -59,6 +61,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 12)
         button.addTarget(self, action: #selector(onRawImageButtonTap), for: .touchUpInside)
         button.setBackgroundImage(rawImageButtonBackgroundImage, for: .normal)
+        button.contentEdgeInsets = UIEdgeInsets(top: 5, left: 7, bottom: 5, right: 7)
         return button
         }()
     
@@ -92,9 +95,9 @@ public class PhotoBrowserCell: UICollectionViewCell {
     
     /// 计算contentSize应处于的中心位置
     private var centerOfContentSize: CGPoint {
-        let deltaWidth = bounds.width - scrollView.contentSize.width
+        let deltaWidth = scrollView.bounds.width - scrollView.contentSize.width
         let offsetX = deltaWidth > 0 ? deltaWidth * 0.5 : 0
-        let deltaHeight = bounds.height - scrollView.contentSize.height
+        let deltaHeight = scrollView.bounds.height - scrollView.contentSize.height
         let offsetY = deltaHeight > 0 ? deltaHeight * 0.5 : 0
         return CGPoint(x: scrollView.contentSize.width * 0.5 + offsetX,
                        y: scrollView.contentSize.height * 0.5 + offsetY)
@@ -144,6 +147,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
         scrollView.maximumZoomScale = imageMaximumZoomScale
         scrollView.showsVerticalScrollIndicator = false
         scrollView.showsHorizontalScrollIndicator = false
+        scrollView.delaysContentTouches = false
+        scrollView.isMultipleTouchEnabled = true
         if #available(iOS 11.0, *) {
             scrollView.contentInsetAdjustmentBehavior = .never
         }
@@ -192,7 +197,9 @@ public class PhotoBrowserCell: UICollectionViewCell {
     private func doLayout() {
         guard shouldLayout else { return }
 
-        scrollView.frame = contentView.bounds
+        scrollView.frame = CGRect(x: photoSpacing/2, y: 0,
+                                  width: contentView.bounds.width - photoSpacing,
+                                  height: contentView.bounds.height)
         scrollView.setZoomScale(1.0, animated: false)
         imageView.frame = fitFrame
         scrollView.setZoomScale(1.0, animated: false)
@@ -203,8 +210,6 @@ public class PhotoBrowserCell: UICollectionViewCell {
             contentView.addSubview(rawImageButton)
             if rawImageButtonSize == nil {
                 rawImageButton.sizeToFit()
-                rawImageButton.bounds.size.width += 14
-                rawImageButton.bounds.size.height += 6
                 rawImageButtonSize = rawImageButton.bounds.size
             } else {
                 rawImageButton.bounds.size = rawImageButtonSize!

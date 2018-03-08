@@ -127,15 +127,17 @@ public class PhotoBrowser: UIViewController {
     private let presentingVC: UIViewController
     
     /// 容器layout
-    private lazy var flowLayout: PhotoBrowserLayout = {
-        return PhotoBrowserLayout()
+    private lazy var flowLayout: UICollectionViewFlowLayout = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        return layout
     }()
     
     /// 容器
     private lazy var collectionView: UICollectionView = { [unowned self] in
         let collectionView = UICollectionView(frame: CGRect.zero, collectionViewLayout: flowLayout)
         collectionView.backgroundColor = UIColor.clear
-        collectionView.decelerationRate = UIScrollViewDecelerationRateFast
+        collectionView.isPagingEnabled = true
         collectionView.showsVerticalScrollIndicator = false
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.dataSource = self
@@ -165,9 +167,9 @@ public class PhotoBrowser: UIViewController {
     }
     
     deinit {
-        #if DEBUG
-            print("deinit:\(self)")
-        #endif
+        //#if DEBUG
+        //    print("deinit:\(self)")
+        //#endif
     }
     
     /// 展示，传入图片序号，从0开始
@@ -251,10 +253,14 @@ public class PhotoBrowser: UIViewController {
     /// 视图布局
     private func layoutViews() {
         // flowLayout
-        flowLayout.minimumLineSpacing = photoSpacing
-        flowLayout.itemSize = view.bounds.size
+        flowLayout.minimumInteritemSpacing = 0
+        flowLayout.minimumLineSpacing = 0
+        flowLayout.itemSize = CGSize(width: view.bounds.width + photoSpacing, height: view.bounds.height)
         // collectionView
-        collectionView.frame = view.bounds
+        collectionView.frame = CGRect(x: view.bounds.origin.x - (photoSpacing/2),
+                                      y: view.bounds.origin.y,
+                                      width: view.bounds.width + photoSpacing,
+                                      height: view.bounds.height)
     }
     
     /// 遮盖状态栏。以改变windowLevel的方式遮盖
@@ -287,6 +293,7 @@ extension PhotoBrowser: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NSStringFromClass(PhotoBrowserCell.self), for: indexPath) as! PhotoBrowserCell
         cell.imageView.contentMode = imageScaleMode
         cell.photoBrowserCellDelegate = self
+        cell.photoSpacing = self.photoSpacing
         let (image, highQualityUrl, rawUrl, rawSize) = imageFor(index: indexPath.item)
         cell.setImage(image, highQualityUrl: highQualityUrl, rawUrl: rawUrl, rawSize: rawSize)
         cell.imageMaximumZoomScale = imageMaximumZoomScale
@@ -322,9 +329,13 @@ extension PhotoBrowser: UICollectionViewDelegate {
                 //通过代码滚动过来的忽略更新分页
                 return
         }
-        let offsetX = scrollView.contentOffset.x
-        let width = scrollView.frame.width + photoSpacing
-        currentIndex = Int(floor(offsetX / width + 0.5))
+        let width = view.frame.width + photoSpacing
+        let offsetX = scrollView.contentOffset.x + width / 2
+        
+        let index = max(0, Int(offsetX / width))
+        if index != currentIndex, index < collectionView.numberOfItems(inSection: 0) {
+            currentIndex = index
+        }
     }
 }
 
