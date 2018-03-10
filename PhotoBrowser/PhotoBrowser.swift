@@ -154,6 +154,32 @@ public class PhotoBrowser: UIViewController {
     /// 保存原windowLevel
     private var originWindowLevel: UIWindowLevel!
     
+    lazy var bundle: Bundle = {
+        guard let bundleURL = Bundle(for: PhotoBrowser.self)
+            .url(forResource: "JXPhotoBrowser", withExtension: "bundle"),
+            let bundle = Bundle(url: bundleURL) else {
+                return Bundle()
+        }
+        return bundle
+    }()
+    
+    lazy var languageBundle: Bundle = {
+        var preferredLanguage = Locale.preferredLanguages.first ?? "en"
+        if preferredLanguage.hasPrefix("zh-Han") {
+            //简体、繁体使用简体
+            preferredLanguage = "zh-Hans"
+        } else if preferredLanguage.hasPrefix("ar-") {
+            //阿拉伯
+            preferredLanguage = "ar"
+        } else {
+            preferredLanguage = "en"
+        }
+        guard let path = bundle.path(forResource: preferredLanguage, ofType: "lproj") else {
+            return bundle
+        }
+        return Bundle(path: path) ?? bundle
+    }()
+    
     // MARK: - 公开方法
     /// 初始化，传入用于present出本VC的VC，以及实现了PhotoBrowserDelegate协议的对象
     public init(showByViewController presentingVC: UIViewController, delegate: PhotoBrowserDelegate) {
@@ -291,6 +317,7 @@ extension PhotoBrowser: UICollectionViewDataSource {
     
     public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NSStringFromClass(PhotoBrowserCell.self), for: indexPath) as! PhotoBrowserCell
+        cell.browser = self
         cell.imageView.contentMode = imageScaleMode
         cell.photoBrowserCellDelegate = self
         cell.photoSpacing = self.photoSpacing

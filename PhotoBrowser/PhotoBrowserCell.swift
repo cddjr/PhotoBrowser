@@ -54,6 +54,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
     
     private var progressViewShowCount = 0
     
+    weak var browser:PhotoBrowser?
+    
     /// 查看原图按钮
     private lazy var rawImageButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
@@ -66,10 +68,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
         }()
     
     private lazy var rawImageCancelView: UIImageView = { [unowned self] in
-        guard let bundleURL = Bundle(for: PhotoBrowser.self)
-            .url(forResource: "JXPhotoBrowser", withExtension: "bundle"),
-            let img = UIImage(named: "cancel", in: Bundle(url: bundleURL), compatibleWith: nil) else {
-                return UIImageView()
+        guard let bundle = browser?.bundle, let img = UIImage(named: "cancel", in: bundle, compatibleWith: nil) else {
+            return UIImageView()
         }
         
         let view = UIImageView(image: img)
@@ -82,11 +82,10 @@ public class PhotoBrowserCell: UICollectionViewCell {
         }()
     
     private lazy var rawImageButtonBackgroundImage: UIImage? = { [unowned self] in
-        guard let bundleURL = Bundle(for: PhotoBrowser.self)
-            .url(forResource: "JXPhotoBrowser", withExtension: "bundle") else {
-                return nil
+        guard let bundle = browser?.bundle else {
+            return nil
         }
-        let img = UIImage(named: "rawbtn", in: Bundle(url: bundleURL), compatibleWith: nil)
+        let img = UIImage(named: "rawbtn", in: bundle, compatibleWith: nil)
         let edge = UIEdgeInsets(top: 6, left: 6, bottom: 6, right: 6)
         return img?.resizableImage(withCapInsets: edge, resizingMode: .tile)
         }()
@@ -235,6 +234,9 @@ public class PhotoBrowserCell: UICollectionViewCell {
     }
     
     private func resetRawImageButton() {
+        guard let languageBundle = browser?.languageBundle else {
+            return
+        }
         //设置查看原图按钮的标题
         var sizeTitle = ""
         if let size = rawSize {
@@ -246,7 +248,8 @@ public class PhotoBrowserCell: UICollectionViewCell {
                 sizeTitle = String(format: "(%.1fM)", Double(size) / 1024 / 1024)
             }
         }
-        rawImageButton.setTitle("查看原图\(sizeTitle)", for: .normal)
+        let fullImageTitle = languageBundle.localizedString(forKey: "查看原图", value: nil, table: nil)
+        rawImageButton.setTitle("\(fullImageTitle)\(sizeTitle)", for: .normal)
         rawImageButtonSize = nil
     }
     
@@ -319,7 +322,11 @@ public class PhotoBrowserCell: UICollectionViewCell {
                     self.resetRawImageButton()
                 } else {
                     //原图加载成功，渐隐按钮
-                    self.rawImageButton.setTitle("已完成", for: .normal)
+                    guard let languageBundle = self.browser?.languageBundle else {
+                        return
+                    }
+                    let doneTitle = languageBundle.localizedString(forKey: "已完成", value: nil, table: nil)
+                    self.rawImageButton.setTitle(doneTitle, for: .normal)
                     UIView.animate(withDuration: 0.5, animations: {
                         self.rawImageButton.alpha = 0
                     }, completion: { _ in
