@@ -58,7 +58,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
     
     /// 查看原图按钮
     private lazy var rawImageButton: UIButton = { [unowned self] in
-        let button = UIButton(type: .custom)
+        let button = XButton(type: .custom)
         button.setTitleColor(UIColor.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 13)
         button.addTarget(self, action: #selector(onRawImageButtonTap), for: .touchUpInside)

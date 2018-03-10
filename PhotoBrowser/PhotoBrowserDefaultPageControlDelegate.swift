@@ -25,6 +25,7 @@ public class PhotoBrowserDefaultPageControlDelegate: PhotoBrowserPageControlDele
     
     public func pageControlOfPhotoBrowser(_ photoBrowser: PhotoBrowser) -> UIView {
         let pageControl = UIPageControl()
+        pageControl.isUserInteractionEnabled = false
         pageControl.numberOfPages = numberOfPages
         return pageControl
     }

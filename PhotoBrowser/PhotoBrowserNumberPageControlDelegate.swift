@@ -30,6 +30,7 @@ public class PhotoBrowserNumberPageControlDelegate: PhotoBrowserPageControlDeleg
     
     public func pageControlOfPhotoBrowser(_ photoBrowser: PhotoBrowser) -> UIView {
         let pageControl = UILabel()
+        pageControl.isUserInteractionEnabled = false
         pageControl.font = font
         pageControl.textColor = textColor
         pageControl.text = "1 / \(numberOfPages)"
