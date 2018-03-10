@@ -60,10 +60,10 @@ public class PhotoBrowserCell: UICollectionViewCell {
     private lazy var rawImageButton: UIButton = { [unowned self] in
         let button = UIButton(type: .custom)
         button.setTitleColor(UIColor.white, for: .normal)
-        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 12)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 13)
         button.addTarget(self, action: #selector(onRawImageButtonTap), for: .touchUpInside)
         button.setBackgroundImage(rawImageButtonBackgroundImage, for: .normal)
-        button.contentEdgeInsets = UIEdgeInsets(top: 5, left: 7, bottom: 5, right: 7)
+        button.contentEdgeInsets = UIEdgeInsets(top: 5, left: 6, bottom: 5, right: 6)
         return button
         }()
     
@@ -209,6 +209,12 @@ public class PhotoBrowserCell: UICollectionViewCell {
             contentView.addSubview(rawImageButton)
             if rawImageButtonSize == nil {
                 rawImageButton.sizeToFit()
+                if rawImageButton.bounds.width < 110 {
+                    rawImageButton.bounds.size.width = 110
+                }
+                if rawImageButton.bounds.height < 26 {
+                    rawImageButton.bounds.size.height = 26
+                }
                 rawImageButtonSize = rawImageButton.bounds.size
             } else {
                 rawImageButton.bounds.size = rawImageButtonSize!
@@ -249,7 +255,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
             }
         }
         let fullImageTitle = languageBundle.localizedString(forKey: "查看原图", value: nil, table: nil)
-        rawImageButton.setTitle("\(fullImageTitle)\(sizeTitle)", for: .normal)
+        rawImageButton.setTitle("\(fullImageTitle) \(sizeTitle)", for: .normal)
         rawImageButtonSize = nil
     }
     
