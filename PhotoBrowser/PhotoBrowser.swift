@@ -168,9 +168,6 @@ public class PhotoBrowser: UIViewController {
         if preferredLanguage.hasPrefix("zh-Han") {
             //简体、繁体使用简体
             preferredLanguage = "zh-Hans"
-        } else if preferredLanguage.hasPrefix("ar-") {
-            //阿拉伯
-            preferredLanguage = "ar"
         } else {
             preferredLanguage = "en"
         }

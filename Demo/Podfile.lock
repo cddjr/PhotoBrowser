@@ -12,9 +12,15 @@ PODS:
 DEPENDENCIES:
   - JXPhotoBrowser (from `..`)
 
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - YYCache
+    - YYImage
+    - YYWebImage
+
 EXTERNAL SOURCES:
   JXPhotoBrowser:
-    :path: ..
+    :path: ".."
 
 SPEC CHECKSUMS:
   JXPhotoBrowser: 1b50b445cd19d874e87b50392a0ae53a7e5fe29c
@@ -24,4 +30,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 4336210e105997d3dec6769ab57764a7cd225dc3
 
-COCOAPODS: 1.4.0
+COCOAPODS: 1.6.0.beta.1
