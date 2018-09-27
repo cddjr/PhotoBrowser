@@ -62,7 +62,7 @@ public class PhotoBrowserNumberPageControlDelegate: PhotoBrowserPageControlDeleg
             if superView.safeAreaInsets.top > 0 {
                 topY = 0
             }
-            let bounds = UIEdgeInsetsInsetRect(superView.bounds, superView.safeAreaInsets)
+            let bounds = superView.bounds.inset(by: superView.safeAreaInsets)
             center = CGPoint(x: bounds.midX, y: bounds.minY + topY + pageControl.bounds.height / 2)
         } else {
             center = CGPoint(x: superView.bounds.midX, y: superView.bounds.minY + topY + pageControl.bounds.height / 2)

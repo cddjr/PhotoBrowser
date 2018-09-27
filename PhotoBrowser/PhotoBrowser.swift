@@ -89,7 +89,7 @@ public class PhotoBrowser: UIViewController {
     public var photoSpacing: CGFloat = 30
     
     /// 图片缩放模式
-    public var imageScaleMode = UIViewContentMode.scaleAspectFill
+    public var imageScaleMode = UIView.ContentMode.scaleAspectFill
     
     /// 捏合手势放大图片时的最大允许比例
     public var imageMaximumZoomScale: CGFloat = 2.0
@@ -152,7 +152,7 @@ public class PhotoBrowser: UIViewController {
     }()
     
     /// 保存原windowLevel
-    private var originWindowLevel: UIWindowLevel!
+    private var originWindowLevel: UIWindow.Level!
     
     lazy var bundle: Bundle = {
         guard let bundleURL = Bundle(for: PhotoBrowser.self)
@@ -297,7 +297,7 @@ public class PhotoBrowser: UIViewController {
             originWindowLevel = window.windowLevel
         }
         if cover {
-            window.windowLevel = UIWindowLevelStatusBar + 1
+            window.windowLevel = UIWindow.Level.statusBar + 1
         } else {
             window.windowLevel = originWindowLevel
         }

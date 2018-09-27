@@ -227,7 +227,7 @@ public class PhotoBrowserCell: UICollectionViewCell {
                 if safeAreaInsets.bottom > 0 {
                     bottomY = 6 + UIPageControlHeight
                 }
-                let bounds = UIEdgeInsetsInsetRect(contentView.bounds, safeAreaInsets)
+                let bounds = contentView.bounds.inset(by: safeAreaInsets)
                 center = CGPoint(x: bounds.midX, y: bounds.maxY - bottomY - rawImageButton.bounds.height / 2)
             } else {
                 center = CGPoint(x: contentView.bounds.midX,
